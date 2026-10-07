@@ -1,0 +1,27 @@
+{
+  "name": "dom-pedro-tech",
+  "version": "1.0.0",
+  "description": "Desenvolvimento de sites personalizados, modernos e responsivos para empresas e negócios.",
+  "main": "index.js",
+
+  "scripts": {
+    "start": "node server.js"
+},
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabrielPaina/dom-pedro-tech.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/GabrielPaina/dom-pedro-tech/issues"
+  },
+  "homepage": "https://github.com/GabrielPaina/dom-pedro-tech#readme",
+  "dependencies": {
+    "dotenv": "^18.0.6",
+    "nodemailer": "^10.0.15"
+  }
+}
