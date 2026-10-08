@@ -1,230 +1,313 @@
 // ==========================================
-// DOM PEDRO TECH
-// Efeitos tecnológicos e sofisticados
+// DOM PEDRO TECH — efeitos visuais
+// Carregar no <head>, SEM defer:
+//   <script src="js/script.js"></script>
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", () => {
+(function () {
+  "use strict";
 
-  // ==========================================
-  // 1. REVELAÇÃO DAS SEÇÕES AO ROLAR
-  // ==========================================
+  const root = document.documentElement;
 
-  const elements = document.querySelectorAll(
-    "section, .svc div, .steps li, .panel, .hero h1, .hero p, .cta, .stage"
-  );
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
 
-  elements.forEach((element) => {
-    element.style.opacity = "0";
-    element.style.transform = "translateY(30px)";
-    element.style.transition =
-      "opacity .8s ease, transform .8s ease";
-  });
+  const canObserve = "IntersectionObserver" in window;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
+  const finePointer = window.matchMedia(
+    "(hover: hover) and (pointer: fine)"
+  ).matches;
 
-        if (entry.isIntersecting) {
+  // Só esconde o conteúdo (via CSS) se as animações vão mesmo rodar.
+  // Se o JS falhar ou o usuário preferir menos movimento, tudo fica visível.
+  const animate = !reduceMotion && canObserve;
 
-          entry.target.style.opacity = "1";
-          entry.target.style.transform = "translateY(0)";
-
-          observer.unobserve(entry.target);
-        }
-
-      });
-    },
-    {
-      threshold: 0.12
-    }
-  );
-
-  elements.forEach((element) => {
-    observer.observe(element);
-  });
-
-
-  // ==========================================
-  // 2. EFEITO DE PROFUNDIDADE NO LOGO
-  // ==========================================
-
-  const stage = document.querySelector(".stage");
-
-  if (stage) {
-
-    stage.addEventListener("mousemove", (event) => {
-
-      const rect = stage.getBoundingClientRect();
-
-      const x =
-        (event.clientX - rect.left) / rect.width - 0.5;
-
-      const y =
-        (event.clientY - rect.top) / rect.height - 0.5;
-
-      const rotateY = x * 8;
-      const rotateX = y * -8;
-
-      stage.style.transform =
-        "perspective(900px) rotateY(" + rotateY + "deg) rotateX(" + rotateX + "deg)";
-
-    });
-
-    stage.addEventListener("mouseleave", () => {
-
-      stage.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg)";
-
-      stage.style.transition =
-        "transform .6s ease";
-
-    });
-
-    stage.addEventListener("mouseenter", () => {
-
-      stage.style.transition =
-        "transform .15s ease";
-
-    });
-
+  if (animate) {
+    root.classList.add("js-ready");
   }
 
+  document.addEventListener("DOMContentLoaded", () => {
 
-  // ==========================================
-  // 3. BRILHO INTERATIVO NOS SERVIÇOS
-  // ==========================================
+    // ==========================================
+    // 1. REVELAÇÃO DAS SEÇÕES AO ROLAR
+    // ==========================================
 
-  const cards = document.querySelectorAll(".svc div");
+    if (animate) {
 
-  cards.forEach((card) => {
+      const targets = document.querySelectorAll(
+        "section, .svc div, .steps li, .panel, .hero p, .cta, .stage"
+      );
 
-    card.addEventListener("mousemove", (event) => {
+      targets.forEach((el) => el.classList.add("reveal"));
 
-      const rect = card.getBoundingClientRect();
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12 }
+      );
 
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-
-      card.style.background =
-        "radial-gradient(circle at " + x + "px " + y + "px, rgba(47, 209, 183, .12), #0A1424 45%)";
-
-    });
-
-    card.addEventListener("mouseleave", () => {
-
-      card.style.background = "";
-
-    });
-
-  });
+      targets.forEach((el) => observer.observe(el));
+    }
 
 
-  // ==========================================
-  // 4. EFEITO DE DIGITAÇÃO NO TÍTULO
-  // ==========================================
+    // ==========================================
+    // 2. PROFUNDIDADE NO LOGO (inclina o .crest)
+    // ==========================================
 
-  const title = document.querySelector(".hero h1");
+    const stage = document.querySelector(".stage");
+    const crest = document.querySelector(".stage .crest");
 
-  if (title) {
+    if (stage && crest && finePointer && !reduceMotion) {
 
-    title.style.opacity = "1";
-    title.style.transform = "translateY(0)";
+      stage.addEventListener("mouseenter", () => {
+        crest.style.transition = "transform .15s ease";
+      });
 
-    const originalHTML = title.innerHTML;
+      stage.addEventListener("mousemove", (event) => {
+        const rect = stage.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
 
-    title.innerHTML = "";
+        crest.style.transform =
+          "perspective(900px) rotateY(" + (x * 8) + "deg) rotateX(" + (y * -8) + "deg)";
+      });
 
-    const temporary = document.createElement("span");
+      stage.addEventListener("mouseleave", () => {
+        crest.style.transition = "transform .6s ease";
+        crest.style.transform =
+          "perspective(900px) rotateY(0deg) rotateX(0deg)";
+      });
+    }
 
-    temporary.innerHTML = originalHTML;
 
-    const nodes = Array.from(temporary.childNodes);
+    // ==========================================
+    // 3. BRILHO INTERATIVO NOS SERVIÇOS
+    // ==========================================
 
-    let index = 0;
+    if (finePointer) {
 
-    function typeTitle() {
+      document.querySelectorAll(".svc div").forEach((card) => {
 
-      if (index >= nodes.length) {
-        return;
+        card.addEventListener("mousemove", (event) => {
+          const rect = card.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+
+          card.style.background =
+            "radial-gradient(circle at " + x + "px " + y + "px, rgba(47, 209, 183, .12), #0A1424 45%)";
+        });
+
+        card.addEventListener("mouseleave", () => {
+          card.style.background = "";
+        });
+      });
+    }
+
+
+    // ==========================================
+    // 4. DIGITAÇÃO NO TÍTULO (letra por letra)
+    // ==========================================
+
+    const title = document.querySelector(".hero h1");
+
+    if (title && !reduceMotion) {
+
+      // Guarda o texto completo para leitores de tela
+      title.setAttribute("aria-label", title.textContent.replace(/\s+/g, " ").trim());
+
+      // Reserva a altura final para a página não "pular" durante a digitação
+      title.style.minHeight = title.offsetHeight + "px";
+
+      // Coleta os nós de texto (mantém o <span class="gold"> intacto)
+      const walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT);
+      const parts = [];
+
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        parts.push({ node: node, text: node.textContent });
+        node.textContent = "";
       }
 
-      const node = nodes[index];
+      let partIndex = 0;
+      let charIndex = 0;
 
-      title.appendChild(node.cloneNode(true));
+      const type = () => {
+        if (partIndex >= parts.length) {
+          return;
+        }
 
-      index++;
+        const part = parts[partIndex];
+        charIndex++;
+        part.node.textContent = part.text.slice(0, charIndex);
 
-      setTimeout(typeTitle, 180);
+        if (charIndex >= part.text.length) {
+          partIndex++;
+          charIndex = 0;
+        }
+
+        setTimeout(type, 45);
+      };
+
+      type();
     }
 
-    typeTitle();
 
-  }
+    // ==========================================
+    // 5. HEADER COM EFEITO AO ROLAR
+    // ==========================================
+
+    const header = document.querySelector("header");
+
+    if (header) {
+
+      let scrolled = null;
+
+      const updateHeader = () => {
+        const isScrolled = window.scrollY > 40;
+
+        if (isScrolled === scrolled) {
+          return;
+        }
+
+        scrolled = isScrolled;
+
+        header.style.background = isScrolled
+          ? "rgba(5, 11, 21, .94)"
+          : "rgba(5, 11, 21, .82)";
+
+        header.style.boxShadow = isScrolled
+          ? "0 10px 40px rgba(0, 0, 0, .25)"
+          : "none";
+      };
+
+      window.addEventListener("scroll", updateHeader, { passive: true });
+      updateHeader();
+    }
 
 
-  // ==========================================
-  // 5. HEADER COM EFEITO AO ROLAR
-  // ==========================================
+    // ==========================================
+    // 6. LUZ SEGUINDO O MOUSE
+    // ==========================================
 
-  const header = document.querySelector("header");
+    if (finePointer && !reduceMotion) {
 
-  if (header) {
+      const light = document.createElement("div");
 
-    window.addEventListener("scroll", () => {
+      light.setAttribute("aria-hidden", "true");
+      light.style.position = "fixed";
+      light.style.left = "0";
+      light.style.top = "0";
+      light.style.width = "220px";
+      light.style.height = "220px";
+      light.style.borderRadius = "50%";
+      light.style.pointerEvents = "none";
+      light.style.zIndex = "0";
+      light.style.background =
+        "radial-gradient(circle, rgba(47,209,183,.08), transparent 70%)";
+      light.style.willChange = "transform";
 
-      if (window.scrollY > 40) {
+      document.body.appendChild(light);
 
-        header.style.background =
-          "rgba(5, 11, 21, .94)";
+      let mouseX = 0;
+      let mouseY = 0;
+      let queued = false;
 
-        header.style.boxShadow =
-          "0 10px 40px rgba(0, 0, 0, .25)";
+      document.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(() => {
+            light.style.transform =
+              "translate(" + (mouseX - 110) + "px, " + (mouseY - 110) + "px)";
+            queued = false;
+          });
+        }
+      });
+    }
+
+    // 7. ANO AUTOMÁTICO NO RODAPÉ (sem innerHTML)
+    const footerText = document.querySelector("footer span");
+
+    if (footerText) {
+      footerText.textContent = footerText.textContent.replace(
+        /©\s*\d{4}/,
+        "© " + new Date().getFullYear()
+      );
+    }
+    
+// ==========================================
+// 8. FORMULÁRIO DE CONTATO
+// ==========================================
+
+const contactForm = document.getElementById("contactForm");
+const formStatus = document.getElementById("formStatus");
+
+if (contactForm && formStatus) {
+
+  contactForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    formStatus.textContent = "Enviando...";
+
+    const formData = new FormData(contactForm);
+
+    const dados = {
+      nome: formData.get("nome"),
+      email: formData.get("email"),
+      mensagem: formData.get("mensagem")
+    };
+
+    try {
+
+      const resposta = await fetch("/api/contato", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dados)
+      });
+
+      const resultado = await resposta.json();
+
+      if (resultado.sucesso) {
+
+        formStatus.textContent = resultado.mensagem;
+        contactForm.reset();
 
       } else {
 
-        header.style.background =
-          "rgba(5, 11, 21, .82)";
-
-        header.style.boxShadow =
-          "none";
+        formStatus.textContent =
+          "Não foi possível enviar a mensagem.";
 
       }
 
-    });
+    } catch (erro) {
 
-  }
+      console.error(erro);
 
+      formStatus.textContent =
+        "Erro ao conectar com o servidor.";
 
-  // ==========================================
-  // 6. EFEITO DE LUZ SEGUINDO O MOUSE
-  // ==========================================
+    }
 
-  const light = document.createElement("div");
-
-  light.style.position = "fixed";
-  light.style.width = "220px";
-  light.style.height = "220px";
-  light.style.borderRadius = "50%";
-  light.style.pointerEvents = "none";
-  light.style.zIndex = "0";
-  light.style.background =
-    "radial-gradient(circle, rgba(47,209,183,.08), transparent 70%)";
-  light.style.transform = "translate(-50%, -50%)";
-  light.style.transition = "left .15s ease, top .15s ease";
-
-  if (document.body) {
-    document.body.appendChild(light);
-  }
-
-  document.addEventListener("mousemove", (event) => {
-    light.style.left = event.clientX + "px";
-    light.style.top = event.clientY + "px";
   });
 
-  // 7. ANO AUTOMÁTICO NO RODAPÉ
-  const footer = document.querySelector("footer");
+}
+  });
+})();
 
-  if (footer) {
-    const year = new Date().getFullYear();
-    footer.innerHTML = footer.innerHTML.replace(/©\s*\d{4}/, "© " + year);
-  }
-});
+
+
+
+
+
